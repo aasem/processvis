@@ -1,0 +1,10 @@
+{
+  "scripts": {
+    "generate-markmap": "node generate-markmap.js",
+    "generate-markmap:offline": "node generate-markmap.js --offline"
+  },
+  "dependencies": {
+    "markmap-lib": "^0.18.12",
+    "markmap-render": "^0.18.12"
+  }
+}
