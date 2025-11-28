@@ -64,7 +64,85 @@ if (offlineMode) {
 }
 
 // Generate HTML with frontmatter options
-const html = fillTemplate(root, assets, templateOptions);
+let html = fillTemplate(root, assets, templateOptions);
+
+// Remove old auto-detection code (toolbar handles it better with localStorage)
+html = html.replace(
+  /\s+if \(window\.matchMedia\("\(prefers-color-scheme: dark\)"\)\.matches\) \{\s+document\.documentElement\.classList\.add\("markmap-dark"\);\s+\}/,
+  ''
+);
+
+// Add theme switcher toolbar
+const toolbarHTML = `
+<div id="markmap-toolbar" style="position: fixed; bottom: 20px; right: 20px; z-index: 1000; display: flex; gap: 8px;">
+  <button id="theme-toggle" title="Toggle theme" style="
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 2px solid currentColor;
+    background: var(--toolbar-bg, #fff);
+    color: var(--toolbar-color, #333);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    transition: all 0.2s;
+  " onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">
+    <span id="theme-icon">🌙</span>
+  </button>
+</div>
+
+<style>
+  .markmap-dark #markmap-toolbar button {
+    --toolbar-bg: #27272a;
+    --toolbar-color: #eee;
+    border-color: #444;
+  }
+  
+  #markmap-toolbar button:hover {
+    box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+  }
+</style>
+
+<script>
+  (function() {
+    const themeToggle = document.getElementById('theme-toggle');
+    const themeIcon = document.getElementById('theme-icon');
+    const html = document.documentElement;
+    
+    // Check for saved theme preference or default to system preference
+    const savedTheme = localStorage.getItem('markmap-theme');
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    const isDark = savedTheme === 'dark' || (!savedTheme && prefersDark);
+    
+    if (isDark) {
+      html.classList.add('markmap-dark');
+      themeIcon.textContent = '☀️';
+    } else {
+      html.classList.remove('markmap-dark');
+      themeIcon.textContent = '🌙';
+    }
+    
+    themeToggle.addEventListener('click', function() {
+      const isDark = html.classList.contains('markmap-dark');
+      if (isDark) {
+        html.classList.remove('markmap-dark');
+        themeIcon.textContent = '🌙';
+        localStorage.setItem('markmap-theme', 'light');
+      } else {
+        html.classList.add('markmap-dark');
+        themeIcon.textContent = '☀️';
+        localStorage.setItem('markmap-theme', 'dark');
+      }
+    });
+  })();
+</script>
+`;
+
+// Inject toolbar before closing body tag
+html = html.replace('</body>', toolbarHTML + '</body>');
 
 // Write HTML to file
 const outputPath = path.join(__dirname, 'taxonomy.html');
