@@ -9,7 +9,7 @@ markmap:
 ### Tasking Taxonomy
 
 #### Task Types
-- Core Task  
+- Core Task
     - Directly linked to the core resp of a div 
 
 - Cross-Functional Task  
